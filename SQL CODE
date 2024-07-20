@@ -1,0 +1,181 @@
+SELECT *
+FROM metaverse;
+
+Transaction Volume by Hour of Day
+   -- Understand peak transaction times to optimize system performance or marketing strategies.--
+
+SELECT hour_of_day,
+    COUNT(*) AS transaction_count
+FROM metaverse
+GROUP BY hour_of_day
+ORDER BY transaction_count DESC;
+
+
+SELECT 
+    CASE 
+        WHEN hour_of_day BETWEEN 0 AND 6 THEN 'Night'
+        WHEN hour_of_day BETWEEN 7 AND 12 THEN 'Morning'
+        WHEN hour_of_day BETWEEN 13 AND 18 THEN 'Noon'
+		WHEN hour_of_day BETWEEN 19 AND 23 THEN 'Evening'
+        ELSE 'Unknown'
+    END AS transaction_time,
+    COUNT(*) AS transaction_count
+FROM metaverse
+GROUP BY transaction_time
+ORDER BY transaction_count DESC;
+
+--Most transaction occurs in the night--
+
+ 2. Top Sending and Receiving Addresses
+   -- Identify the most active participants in transactions.--
+
+-- Top sending addresses--
+SELECT sending_address,
+    COUNT(*) AS transaction_count,
+    SUM(amount) AS total_amount
+FROM metaverse
+GROUP BY sending_address
+ORDER BY total_amount DESC
+LIMIT 10;
+
+-- Top receiving addresses
+SELECT receiving_address,
+    COUNT(*) AS transaction_count,
+    SUM(amount) AS total_amount
+FROM metaverse
+GROUP BY receiving_address
+ORDER BY total_amount DESC
+LIMIT 10;
+
+ 3. Regional Transaction Analysis
+   -- Compare transaction activities across different regions.--
+
+SELECT 
+    location_region,
+    COUNT(*) AS transaction_count,
+    SUM(amount) AS total_amount
+FROM metaverse
+GROUP BY location_region
+ORDER BY total_amount DESC;
+
+--There isn't a significant difference between the transaction counts over the regions--
+
+4. Age Distribution Analysis
+   -- Compare transaction activities across different age group.--
+
+SELECT 
+    age_group,
+    COUNT(*) AS transaction_count,
+    SUM(amount) AS total_amount
+FROM metaverse
+GROUP BY age_group
+ORDER BY total_amount DESC;
+
+
+ 5. Correlation Between Session Duration and Transaction Amounts
+   -- Explore if longer sessions correlate with higher transaction amounts.--
+
+SELECT 
+    session_duration,
+    AVG(amount) AS avg_amount,
+    SUM(amount) AS total_amount
+FROM metaverse
+GROUP BY session_duration
+ORDER BY session_duration;
+
+--The sessions has no effect on the transaction amounts--
+
+
+5. Purchase Patterns by Age Group
+   --Determine popular purchase patterns across different age groups.--
+				 
+SELECT age_group,
+    purchase_pattern,
+    COUNT(*) AS pattern_count
+FROM metaverse
+GROUP BY age_group, 
+         purchase_pattern
+ORDER BY age_group, 
+         pattern_count DESC;
+         
+
+
+ 6. Risk Score Analysis
+   -- Analyze distribution of risk scores and identify high-risk transactions.--
+
+SELECT 
+    CASE 
+        WHEN risk_score BETWEEN 0 AND 33.9 THEN 'Low'
+        WHEN risk_score BETWEEN 34 AND 66.9 THEN 'Medium'
+        WHEN risk_score BETWEEN 67 AND 100 THEN 'High'
+        ELSE 'Unknown'
+    END AS risk_category,
+    COUNT(*) AS transaction_count
+FROM metaverse
+GROUP BY risk_category
+ORDER BY risk_category;
+
+--Most transactions fall under medium risk--
+
+ 7. Anomaly Detection
+   - List all transactions marked as anomalies for further investigation.
+
+SELECT 
+    timestamp,
+    sending_address,
+    receiving_address,
+    amount,
+    transaction_type,
+    location_region,
+    ip_prefix,
+    login_frequency,
+    session_duration,
+    purchase_pattern,
+    age_group,
+    risk_score
+FROM metaverse
+WHERE anomaly IS NOT NULL
+GROUP BY ip_prefix
+ORDER BY timestamp;
+
+ 8. IP Address Activity
+   -- Track activity from specific IP address prefixes to identify patterns or suspicious behavior.--
+
+SELECT 
+    ip_prefix,
+    COUNT(*) AS transaction_count
+FROM metaverse
+GROUP BY ip_prefix
+ORDER BY transaction_count DESC;
+
+--Advanced Anomaly Detection--
+
+WITH AddressStats AS (
+    SELECT sending_address,
+        AVG(amount) AS avg_amount,
+        STDDEV(amount) AS stddev_amount
+    FROM metaverse
+    GROUP BY sending_address
+)
+SELECT m.timestamp,
+    m.sending_address,
+    m.receiving_address,
+    m.amount,
+    m.transaction_type,
+    m.location_region,
+    m.ip_prefix,
+    m.login_frequency,
+    m.session_duration,
+    m.purchase_pattern,
+    m.age_group,
+    m.risk_score,
+    m.anomaly,
+    stats.avg_amount,
+    stats.stddev_amount
+FROM metaverse m
+JOIN  AddressStats stats 
+ON m.sending_address = stats.sending_address
+WHERE m.amount > stats.avg_amount + 2 * stats.stddev_amount
+ORDER BY m.timestamp;
+
+--All are within a range--
