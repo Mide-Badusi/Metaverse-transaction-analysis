@@ -33,16 +33,16 @@ Transaction Volume by Hour of Day
 
 Understand peak transaction times to optimize system performance or marketing strategies.
 
-```sql
+
 SELECT hour_of_day,
     COUNT(*) AS transaction_count
 FROM metaverse
 GROUP BY hour_of_day
 ORDER BY transaction_count DESC;
+
+
 Categorize these hours into broader periods to understand transaction patterns across different times of the day.
 
-sql
-Copy code
 SELECT 
     CASE 
         WHEN hour_of_day BETWEEN 0 AND 6 THEN 'Night'
@@ -54,13 +54,13 @@ SELECT
 FROM metaverse
 GROUP BY time_period
 ORDER BY transaction_count DESC;
+--Most transaction occurs in the night--
+
 Top Sending and Receiving Addresses
 Identify the most active participants in transactions.
 
 Top Sending Addresses:
 
-sql
-Copy code
 SELECT sending_address,
     COUNT(*) AS transaction_count,
     SUM(amount) AS total_amount
@@ -68,10 +68,9 @@ FROM metaverse
 GROUP BY sending_address
 ORDER BY total_amount DESC
 LIMIT 10;
+
 Top Receiving Addresses:
 
-sql
-Copy code
 SELECT receiving_address,
     COUNT(*) AS transaction_count,
     SUM(amount) AS total_amount
@@ -79,11 +78,11 @@ FROM metaverse
 GROUP BY receiving_address
 ORDER BY total_amount DESC
 LIMIT 10;
+
+
 Regional Transaction Analysis
 Compare transaction activities across different regions.
 
-sql
-Copy code
 SELECT 
     location_region,
     COUNT(*) AS transaction_count,
@@ -91,11 +90,11 @@ SELECT
 FROM metaverse
 GROUP BY location_region
 ORDER BY total_amount DESC;
+
+
 Age Distribution Analysis
 Compare transaction activities across different age groups.
 
-sql
-Copy code
 SELECT 
     age_group,
     COUNT(*) AS transaction_count,
@@ -103,11 +102,11 @@ SELECT
 FROM metaverse
 GROUP BY age_group
 ORDER BY total_amount DESC;
+
+
 Correlation Between Session Duration and Transaction Amounts
 Explore if longer sessions correlate with higher transaction amounts.
 
-sql
-Copy code
 SELECT 
     session_duration,
     AVG(amount) AS avg_amount,
@@ -115,11 +114,11 @@ SELECT
 FROM metaverse
 GROUP BY session_duration
 ORDER BY session_duration;
+--The sessions has no effect on the transaction amounts--
+
 Purchase Patterns by Age Group
 Determine popular purchase patterns across different age groups.
 
-sql
-Copy code
 SELECT age_group,
     purchase_pattern,
     COUNT(*) AS pattern_count
@@ -128,11 +127,11 @@ GROUP BY age_group,
          purchase_pattern
 ORDER BY age_group, 
          pattern_count DESC;
+
+
 Risk Score Analysis
 Analyze the distribution of risk scores and identify high-risk transactions.
 
-sql
-Copy code
 SELECT 
     CASE 
         WHEN risk_score BETWEEN 0 AND 33 THEN 'Low'
@@ -143,11 +142,10 @@ SELECT
 FROM metaverse
 GROUP BY risk_category
 ORDER BY risk_category;
+--Most transactions fall under medium risk--
+
 Anomaly Detection
 List all transactions marked as anomalies for further investigation.
-
-sql
-Copy code
 SELECT 
     timestamp,
     sending_address,
@@ -164,22 +162,22 @@ SELECT
 FROM metaverse
 WHERE anomaly IS NOT NULL
 ORDER BY timestamp;
+
+
 IP Address Activity
 Track activity from specific IP address prefixes to identify patterns or suspicious behavior.
 
-sql
-Copy code
 SELECT 
     ip_prefix,
     COUNT(*) AS transaction_count
 FROM metaverse
 GROUP BY ip_prefix
 ORDER BY transaction_count DESC;
+
+
 Advanced Anomaly Detection Using Statistical Analysis
 Calculate the average and standard deviation of transaction amounts to identify transactions that deviate significantly from the norm.
 
-sql
-Copy code
 WITH AddressStats AS (
     SELECT sending_address,
         AVG(amount) AS avg_amount,
@@ -207,7 +205,7 @@ JOIN AddressStats stats
 ON m.sending_address = stats.sending_address
 WHERE m.amount > stats.avg_amount + 2 * stats.stddev_amount
 ORDER BY m.timestamp;
-
+--All are within a range--
 
 Project Conclusion
 Through a meticulous analysis of transaction data within the metaverse, we uncover valuable insights that drive operational efficiency, enhance user experience, and bolster security measures. These SQL queries offer a robust framework for extracting actionable intelligence from complex datasets, ensuring businesses can make data-driven decisions to stay ahead in the digital economy.
